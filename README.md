@@ -1,11 +1,14 @@
 # FinComplaint AI
 
+**Live Demo:** [https://consumer-complaints-agentic-pipelin.vercel.app](https://consumer-complaints-agentic-pipelin.vercel.app)
+
 **FinComplaint AI** is a zero-cost, agentic AI pipeline for consumer finance complaint triage and resolution drafting. It combines deterministic preprocessing with a LangGraph multi-agent workflow to classify complaints, identify root cause, propose MCP-grounded remediation, draft a compliant customer response, and produce a fully auditable explanation chain — all in a single pipeline invocation.
 
 ---
 
 ## Table of Contents
 
+- [Live Deployment](#live-deployment)
 - [Overview](#overview)
 - [Architecture](#architecture)
   - [Pipeline Stages](#pipeline-stages)
@@ -25,6 +28,7 @@
   - [Backend (FastAPI)](#backend-fastapi)
   - [Frontend (Next.js)](#frontend-nextjs)
   - [Docker Compose (Full Stack)](#docker-compose-full-stack)
+- [Deploying to Production](#deploying-to-production)
 - [Tests](#tests)
 - [Evaluation Results](#evaluation-results)
 - [Phase Completion Status](#phase-completion-status)
@@ -381,6 +385,110 @@ One-time migration from local MongoDB to Atlas:
 
 ```bash
 docker compose run --rm migrate
+```
+
+---
+
+## Live Deployment
+
+| Service | URL |
+|---|---|
+| **Frontend** | https://consumer-complaints-agentic-pipelin.vercel.app |
+| **Backend API** | https://consumercomplaintsagenticpipeline-production.up.railway.app |
+| **API Docs** | https://consumercomplaintsagenticpipeline-production.up.railway.app/docs *(dev only)* |
+
+Default admin credentials (first-run seed):
+- **Email**: `admin@fincomplaint.ai`
+- **Password**: `Admin1234!`
+
+---
+
+## Deploying to Production
+
+The app is split across two platforms — **Vercel** for the Next.js frontend and **Railway** for the FastAPI backend.
+
+### Architecture
+
+```
+GitHub (deploy branch)
+├── web_application/frontend/  → Vercel  (Next.js)
+└── web_application/backend/   → Railway (FastAPI + Docker)
+```
+
+Both platforms deploy from the same `deploy` branch. Push to `deploy` to trigger both simultaneously.
+
+### External Services Required
+
+| Service | Purpose | Free Tier |
+|---|---|---|
+| [MongoDB Atlas](https://cloud.mongodb.com) | Database | M0 cluster |
+| [Groq](https://console.groq.com) | LLM API | Free tier |
+| Railway Redis plugin | Session cache / rate limiter | Starter plan |
+
+---
+
+### Backend — Railway
+
+1. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
+2. Select `consumer_complaints_agentic_pipeline`, branch **`deploy`**
+3. Railway auto-detects `railway.toml` and uses `web_application/Dockerfile.backend`
+4. Add a **Redis** plugin — it auto-sets `REDIS_URL`
+5. Set these environment variables in the **Variables** tab:
+
+```env
+APP_ENV=production
+MONGODB_URL=mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net
+MONGODB_DB_NAME=fincomplaint_ai
+JWT_SECRET_KEY=<openssl rand -hex 32>
+SECRET_KEY=<openssl rand -hex 32>
+CSRF_SECRET=<openssl rand -hex 32>
+GROQ_API_KEY=gsk_...
+ALLOWED_ORIGINS=http://localhost:3000,https://<your-vercel-url>.vercel.app
+REDIS_URL=${{Redis.REDIS_URL}}
+```
+
+> **MongoDB Atlas**: enable **Network Access → Allow from Anywhere** (`0.0.0.0/0`) so Railway can connect.
+
+---
+
+### Frontend — Vercel
+
+1. Go to [vercel.com](https://vercel.com) → **New Project** → Import repo
+2. Set **Branch** to `deploy`
+3. Set **Root Directory** to `web_application/frontend`
+4. Framework auto-detects as **Next.js**
+5. Add environment variable:
+
+```env
+NEXT_PUBLIC_API_URL=https://<your-railway-service>.up.railway.app
+```
+
+6. Deploy — Vercel builds and serves the frontend globally via CDN
+
+---
+
+### After Both Are Deployed
+
+Update `ALLOWED_ORIGINS` in Railway to include your Vercel URL:
+
+```env
+ALLOWED_ORIGINS=https://<your-app>.vercel.app,http://localhost:3000
+```
+
+---
+
+### Branching Strategy
+
+```
+Main       ← active development
+  └─ deploy ← production deployments (Vercel + Railway watch this branch)
+```
+
+To ship:
+```bash
+git checkout deploy
+git merge Main
+git push origin deploy
 ```
 
 ---
