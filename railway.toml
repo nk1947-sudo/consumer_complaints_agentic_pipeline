@@ -2,7 +2,8 @@
 # Docs: https://docs.railway.app/reference/config-as-code
 
 [build]
-# Build context is the repo root (Railway clones the full repo)
+# Force Docker — prevents Railpack/Nixpacks auto-detection
+builder = "DOCKERFILE"
 dockerfilePath = "web_application/Dockerfile.backend"
 
 [deploy]
