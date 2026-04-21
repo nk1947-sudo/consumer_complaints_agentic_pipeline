@@ -5,6 +5,7 @@ Never hard-code secrets; use .env for local dev, secrets manager for production.
 
 from __future__ import annotations
 
+import json
 import secrets
 from pathlib import Path
 from typing import List
@@ -53,16 +54,21 @@ class Settings(BaseSettings):
     jwt_secret_key: str = Field(default_factory=lambda: secrets.token_hex(32))
 
     # ── CORS ──────────────────────────────────────────────────────────────────
-    allowed_origins: List[str] = Field(
-        default=["http://localhost:3000", "http://localhost:8000"]
+    # Stored as plain str to avoid pydantic_settings v2 JSON-decoding List[str]
+    # before validators run. Use .get_allowed_origins() everywhere.
+    allowed_origins: str = Field(
+        default="http://localhost:3000,http://localhost:8000"
     )
 
-    @field_validator("allowed_origins", mode="before")
-    @classmethod
-    def parse_origins(cls, v: object) -> List[str]:
-        if isinstance(v, str):
-            return [o.strip() for o in v.split(",") if o.strip()]
-        return v  # type: ignore[return-value]
+    def get_allowed_origins(self) -> List[str]:
+        """Parse comma-separated or JSON-array ALLOWED_ORIGINS env var."""
+        v = self.allowed_origins.strip()
+        if v.startswith("["):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                pass
+        return [o.strip() for o in v.split(",") if o.strip()]
 
     # ── Rate Limiting ─────────────────────────────────────────────────────────
     rate_limit_login: str = Field(default="5/15minute")
