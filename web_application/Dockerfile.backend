@@ -67,10 +67,5 @@ HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=5 \
 
 # Single worker — asyncio pipeline uses in-process queues; multiple workers
 # would break WebSocket→pipeline continuity without an external broker.
-CMD ["uvicorn", "backend.main:app", \
-     "--host", "0.0.0.0", \
-     "--port", "8000", \
-     "--loop", "uvloop", \
-     "--http", "httptools", \
-     "--proxy-headers", \
-     "--forwarded-allow-ips=*"]
+# Use sh -c so Railway's $PORT env var is expanded at runtime.
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000} --loop uvloop --http httptools --proxy-headers --forwarded-allow-ips=*"]
