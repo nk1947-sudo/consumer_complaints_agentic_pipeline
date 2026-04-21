@@ -10,6 +10,6 @@ dockerfilePath = "web_application/Dockerfile.backend"
 # Railway injects $PORT — override the Dockerfile CMD to use it
 startCommand = "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000} --loop uvloop --http httptools --proxy-headers --forwarded-allow-ips=*"
 healthcheckPath = "/health"
-healthcheckTimeout = 30
+healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
