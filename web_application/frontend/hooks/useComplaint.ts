@@ -40,17 +40,17 @@ export function useComplaintWS(complaintId: string | null) {
           if (msg.type !== 'ping') updateFromWS(msg)
           if (msg.type === 'pipeline_done') {
             // Final HTTP fetch to get DB-persisted data (response letter, etc.)
-            fetchComplaint(complaintId)
+            if (complaintId) fetchComplaint(complaintId)
           }
         } catch {}
       }
 
       ws.onerror = () => {
         // Connection refused or token rejected — fall back to polling
-        if (!cancelled) {
-          setTimeout(() => { if (!cancelled) fetchComplaint(complaintId) }, 3_000)
-          setTimeout(() => { if (!cancelled) fetchComplaint(complaintId) }, 8_000)
-          setTimeout(() => { if (!cancelled) fetchComplaint(complaintId) }, 20_000)
+        if (!cancelled && complaintId) {
+          setTimeout(() => { if (!cancelled) fetchComplaint(complaintId!) }, 3_000)
+          setTimeout(() => { if (!cancelled) fetchComplaint(complaintId!) }, 8_000)
+          setTimeout(() => { if (!cancelled) fetchComplaint(complaintId!) }, 20_000)
         }
       }
     }
