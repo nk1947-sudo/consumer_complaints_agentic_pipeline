@@ -482,3 +482,5 @@ Generated at runtime — not committed to version control (except the ChromaDB i
 | `logs/pipeline.jsonl` | Per-run structured JSONL log |
 | `logs/pipeline_summary.log` | Human-readable summary log |
 | `outputs/pipeline_results.csv` | Batch pipeline output |
+#   c o n s u m e r _ c o m p l a i n t s _ a g e n t i c _ p i p e l i n e  
+ 

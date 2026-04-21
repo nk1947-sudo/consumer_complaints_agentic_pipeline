@@ -55,7 +55,10 @@
       "Bash(curl -s http://localhost:8000/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"email\":\"admin@fincomplaint.ai\",\"password\":\"Admin1234!\"}')",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('access_token','ERROR:'+str\\(d\\)\\)[:80]\\)\")",
       "Bash(docker run *)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(cat web_application/frontend/.env.local)",
+      "Bash(cat web_application/frontend/.env.example)",
+      "Bash(Test-Path \"C:/Users/nkaus/Desktop/Project/UMD/Consumer-Complaints-Classification-Agentic-Pipeline/.env.example\")"
     ]
   }
 }

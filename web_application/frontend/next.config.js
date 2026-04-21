@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Produce a self-contained Node.js server bundle — required for the
-  // multi-stage Docker image (copies .next/standalone + .next/static).
-  output: 'standalone',
+  // 'standalone' produces a self-contained bundle for Docker.
+  // Vercel manages its own output format so we skip it there.
+  ...(process.env.VERCEL ? {} : { output: 'standalone' }),
 
   // Strip server-identifying headers from all responses
   poweredByHeader: false,
