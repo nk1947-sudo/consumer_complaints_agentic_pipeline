@@ -133,12 +133,14 @@ def create_app() -> FastAPI:
         """
         token = secrets.token_hex(32)
         response = JSONResponse(content={"csrf_token": token})
+        # SameSite=None;Secure is required for cross-origin deployments (Vercel → Railway).
+        # In development (localhost) SameSite=Lax is sufficient and avoids needing HTTPS.
         response.set_cookie(
             key="csrf_token",
             value=token,
             httponly=False,          # JS must be able to read this one
             secure=settings.is_production,
-            samesite="strict",
+            samesite="none" if settings.is_production else "lax",
             max_age=3600,
         )
         return response
